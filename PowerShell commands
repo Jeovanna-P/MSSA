@@ -305,9 +305,83 @@ Docker: docker run -it mcr.microsoft.com/windows/version cmd.exe
 
 
 
+#Add Computer to Domain:
+Add-Computer -DomainName  contos0.local -Restart
+
+
+#AD Deploy Script:
+#$domainName = "contoso.local"
+#$Adminpassword = "demo@pass123"
+
+$domainName = $args[0]
+$AdminPassword = $args[1]
+if (!$domainName) {$domainName = "contoso.local"}
+if (!$AdminPassword) {$AdminPassword = "demo@pass123"}
+
+Set-DnsClient `
+    -InterfaceAlias "Ethernet*" `
+    -ConnectionSpecificSuffix $domainName
+    
+Install-WindowsFeature `power
+    -Name AD-Domain-Services `
+    -IncludeManagementTools
+
+$securePassword = ConvertTo-SecureString $AdminPassword `
+    -AsPlainText `
+    -Force
+
+Install-ADDSForest `
+    -DomainName $domainName `
+    -SafeModeAdministratorPassword $securePassword `
+    -Force
+
+#Variable Declarations:
+The script starts by declaring two variables, $domainName and $AdminPassword, which are meant to hold the domain name and administrator password. In the comments (lines starting with #), sample values are provided for these variables.
+#Command-Line Arguments:
+The script checks if command-line arguments have been provided. It uses the $args array to retrieve arguments at positions 0 and 1 (which correspond to the domain name and admin password), and assigns them to the corresponding variables. If no arguments are provided, it falls back to the default values specified in the comments.
+#Set-DnsClient:
+This cmdlet configures the DNS client settings for the network interface(s) whose alias matches "Ethernet*". It sets the connection-specific suffix to the domain name provided. This step is essential for DNS resolution within the Active Directory domain.
+#Install-WindowsFeature:
+This cmdlet installs the "Active Directory Domain Services" feature along with its management tools. It is a prerequisite for setting up a domain controller.
+#Secure Password Creation:
+The script converts the provided admin password (in plain text) into a secure string using the ConvertTo-SecureString cmdlet. This is required for specifying the SafeModeAdministratorPassword when promoting a server to a domain controller.
+#Install-ADDSForest:
+This cmdlet configures the server to act as a domain controller by promoting it to be the first domain controller in a new Active Directory forest. It sets the domain name to the value provided, specifies the SafeModeAdministratorPassword as the secure password created earlier, and forces the operation to proceed. This is a critical step in creating a new Active Directory environment.
 
 
 
+
+#ADDS Server Configuration:
+Rename-Computer -NewName "ADDS"
+Set-TimeZone -Name "Eastern Standard Time"
+New-NetIPAddress -InterfaceAlias "Ethernet" -IPAddress "192.168.1.10" -PrefixLength 24 -DefaultGateway "192.168.1.1"
+Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses ("192.168.1.10")
+Restart-Computer	
+
+
+#Create and add a shared VHD (Datal.vhds) that's stored on volume 1 of the CSV to two VMS named VMI and VM2. you use the following commands in Windows PowerShell: 
+New-VHD —path C:\ClusterStorage\Volume1\Data1.vhds -Dynamic -SizeBytes
+127GB 
+Add-VMHardDiskDrive -VMName VM1 -Path 
+C:\ClusterStorage\Volume1\Data1.vhds -ShareVirtualDisk 
+Add-VMHardDiskDrive -VMName VM2 -Path 
+C:\ClusterStorage\Volume1\Data1.vhds -ShareVirtualDisk 
+
+#In addition, if you want to add a shared VHD (Witness.vhdx) that's stored on an SMB file share (ServerI\ShareI) to a VM that's named VM2, you should use the following command in Windows PowerShell: 
+Add-VMHardDiskDrive —VMName VM2 -path  \\Server1\Share1\Witness.vhds — 
+SharevirtualDisk 
+
+#Create new VHD:
+New-VHD -Path c:\sales.vhd -Dynamic -SizeBytes 10Gb | Mount-VHD -Passthru |Initialize-Disk -Passthru |New-Partition -AssignDriveLetter -UseMaximumSize |Format-Volume -FileSystem NTFS -Confirm:$false -Force
+	
+#Convert VHD to .vhdx:
+Convert-VHD –Path C:\Sales.vhd –DestinationPath c:\Sales.vhdx
+
+#Initiate Remote Powershell Session & Install roles and features VM:
+Enter-PSSession -VMName  VMNAMEHERE
+Get-WindowsFeature -Name DHCP
+Install-WindowsFeature -Name DHCP -IncludeManagementTools -Verbose
+Restart-Computer -Force
 
 
 
