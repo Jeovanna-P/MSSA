@@ -387,7 +387,21 @@ Restart-Computer -Force
 (Get-Cluster).DrainOnShutdown
 
 
+#Install the Failover Clustering feature
+Install-WindowsFeature –Name Failover-Clustering –IncludeManagementTools
+
+#Start a remote session, connect to lon-svr3, & install Failover-clustering feature
+$cred=Get-Credential
+$sess = New-PSSession -Credential $cred -ComputerName lon-svr3.contoso.com
+Enter-PSSession $sess
+Install-WindowsFeature –Name Failover-Clustering –IncludeManagementTools
 
 
+#Validate and create a failover cluster:
+Test-Cluster LON-SVR2, LON-SVR3
 
+#Create a new Cluster:
+New-Cluster -Name VMCluster -Node lon-svr2 -StaticAddress 172.16.0.126
 
+#Add a Cluster Node:
+Add-ClusterNode -Name LON-SVR3
