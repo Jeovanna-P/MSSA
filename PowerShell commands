@@ -383,7 +383,8 @@ Get-WindowsFeature -Name DHCP
 Install-WindowsFeature -Name DHCP -IncludeManagementTools -Verbose
 Restart-Computer -Force
 
-
+#Verify Drain On Shutdown
+(Get-Cluster).DrainOnShutdown
 
 
 
