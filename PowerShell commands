@@ -242,11 +242,65 @@ New-VM –Name LON-GUEST1 –MemoryStartupBytes 1024MB –VHDPath "E:\VirtualMac
 #Enable Host Resource Protection to regulate resource usage on the host 
 Set-VMProcessor LON-GUEST2 -EnableHostResourceProtection $true
 
+#Enable Nested Virtualization
+Set-VMProcessor -VMName LON-GUEST1 -ExposeVirtualizationExtensions $true
 
 
 
+##Install Docker on Windows Server
+#In the Windows PowerShell ISE script pane enter the following commands on the first two lines:
 
+Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/microsoft/Windows-Containers/Main/helpful_tools/Install-DockerCE/install-docker-ce.ps1" -o install-docker-ce.ps1
+.\install-docker-ce.ps1
 
+#From the Windows PowerShell ISE toolbar, select the Run Script command.
+#The Invoke-Webrequest command downloads the runtime environment needed to run containers. After running the install-docker-ce.ps1 command, LON-SVR1 restarts.
+#After LON-SVR1 restarts, sign in.. The installation continues.
+#When you receive the message Script complete!, close PowerShell.
+
+#Download an image
+#To download a server-core image that matches the host operating system (OS), run the following command:
+
+docker pull mcr.microsoft.com/windows/servercore/iis:windowsservercore-ltsc2022
+  
+#Deploy a new container
+#On LON-SVR1, confirm the Docker image that's currently pulled by running the following command in Windows PowerShell ISE:
+
+Docker images
+
+#To run the IIS container, enter the following command:
+
+Docker run -d -p 8080:80 --name ContosoSite mcr.microsoft.com/windows/servercore/iis:windowsservercore-ltsc2022 cmd
+
+#This command runs the IIS image as a background service (-d) named ContosoSite and configures networking such that port 8080 of the container host (LON-SVR1) maps to port 80 of the container.
+#Enter the following command to retrieve the container host's IP address information:
+
+ipconfig
+
+#Note the IPv4 address of the Ethernet adapter named vEthernet (nat). This is the new container's address. Make a note of the IPv4 address of the Ethernet adapter named Ethernet. This is the IP address of the Host (LON-SVR1).
+#From the taskbar, select Microsoft Edge, and then enter http://172.16.0.21:8080.
+#Observe the default IIS page provided by IIS running in the Docker container.
+
+#Manage the container
+#At the Windows PowerShell ISE command prompt, run the following command:
+
+docker ps
+
+#This command provides information on the container that's currently running on LON-SVR1. Take note of the container name as you'll use it to stop the container.
+#At the Windows PowerShell ISE command prompt, run the following command:
+
+docker stop ContosoSite
+
+#At the Windows PowerShell ISE command prompt, run the following command to confirm that the container has stopped:
+
+docker ps
+
+#Results
+After this exercise, you'll have deployed and managed a container.
+
+#Configure Windows Server Container | Docker Equivalent 
+Cmdlet: New-Container -Name MyContainerName -Image mycontainerimage:tag
+Docker: docker run -it mcr.microsoft.com/windows/version cmd.exe
 
 
 
