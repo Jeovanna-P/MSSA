@@ -1,0 +1,264 @@
+#Create VM 
+mkdir c:\vms 
+New-VM -Name "VMName" -MemoryStartupBytes 2048MB -Path "C:\VMs" -NewVHDPath "C:\VMs\VMName.vhdx" -NewVHDSizeBytes 60GB -Generation 2
+
+#Get-Module (displays list of cmdlets available for the module referenced)
+Get-Module *sched* -ListAvaialble
+
+#Help Syntax
+Get-Help *noun*
+Get-Command *noun*
+Get-Module *noun* -ListAvailable
+Get-Alias *noun*
+Get-Help about_comparison_operators -ShowWindow
+
+
+
+#User Management Dmdlets
+New-ADUser – Creates a user account
+Set-ADUser – Modifies properties of a user account
+Remove-ADUser – Deletes a user account
+Set-ADAccountPassword – Resets the password
+Set-ADAccountExpiration – Modifies Expiration date
+Unlock-ADAccount – Unlocks a user account that's been locked after exceeding the permitted number of incorrect sign-in attempts
+Enable-ADAccount – Enales a user account
+Disable-ADAccount – Disables a user account
+
+
+#Group Management Dmdlets
+
+New-ADGroup - Creates a new group
+Set-ADGroup - Modifies properties of a group
+Get-ADGroup - Displays properties of a group
+Remove-ADGroup - Deletes a group
+Add-ADGroupMember - Adds members to a group
+Get-ADGroup Member - Displays membership of a group
+Remove-ADGroupMember
+Add-ADPrincipalGroupMembership
+Get-ADPrincipalGroupMembership - Displays group Membership of an object
+Remove-ADPrincipalGroupMembership - Removes group membership from an object
+
+#Syntax Example:
+New-ADGroup -Name "FileServerAdmins" -GroupScope Global
+
+
+#Computer managing Cmdlets
+New-ADComputer - Creates a new computer account 
+Set-ADComputer - Modifies properties of a computer account 
+Get-ADComputer - Displays properties of a computer account 
+Remove-ADComputer  - Deletes a computer account 
+Test-ComputerSecureChannel - Verifies or repairs the trust relationship between a computer and a domain
+Reset-ComputerMachinePassword - Resets the password for a computer account  
+
+#Syntax Example:
+New-ADComputer -Name LON-CLI O -Path -Enabled Strue 
+
+
+#Cmdlets for OU management 
+New-ADOrganizationalUnit - Creates an OU 
+Set-ADOrganizationalUnit - Modifies properties of an OU 
+Get-ADOrganizationalUnit - Displays properties of an OU 
+Remove-ADOrganizationalUnit - Deletes an OU 
+#Parameters for New-ADOrganizationalUnit 
+-Name - Defines the name of a new OU 
+-Path - Defines the location of a new OU 
+-ProtectedFromAccidentalDeletion - Prevents anyone from accidentally deleting an OIJ; the default value is $true 
+
+#Active Directory object cmdlets 
+New-ADObject - Creates a new Active Directory object 
+Set-ADObject - Modified properties of an Active Directory object 
+Get-ADObject - Displays properties of an Active Directory object 
+Remove-ADObject - Deletes an Active Dirqtory object 
+Rename-ADObject - Renames an Active Directory object 
+Restore-ADObject - Restores a deleted Active Directory object from the Active Directory recycle bin
+Move-ADObject - Moves an Active Directory object from one container to another container 
+Sync-ADObject - Syncs an Active Directory object between two domain controllers 
+
+#Syntax Example:
+New-ADObject -Name "AnaBowmancontact" -Type contact 
+
+
+#Managing IP addresses 
+New-NetIPAddress - Creates a new IP address 
+Set-NetIPAddress - Sets properties of an IP address 
+Get-NetIPAddress - Displays properties of an IP address 
+Remove-NetIPAddress - Deletes an IP address 
+
+#Syntax Example:
+New-NetlPAddress -IPAddress 192.168. 1. 10 -InterfaceAlias "Ethernet" -PrefixLength 24 -DefaultGateway 192.168. 1. 1
+
+
+#Managing routing 
+New-NetRoute - Creates an IP routing table entry
+Set-NetRoute - Sets properties of an IP routing table entry 
+Get-NetRoute - Displays properties of an IP routing table entry 
+Remove-NetRoute - Deletes an IP routing table entry 
+Find-NetRoute - Identifies the best local IP address and route to reach a remote address 
+
+#Syntax Example:
+New-NetRoute -DestinationPrefix -InterfaceAlias "Ethernet" -DefaultGateway 192.168. 1. 1 
+
+
+#Managing DNS client
+
+Get-DnsClient - Gets details about a network interface on a computer 
+Set-DnsClient - Set DNS client configuration settings for a network interface 
+Get-Dns ClientServerAddress- Gets the DNS server address settings for a network interface 
+Set-Dns ClientServerAddress - Sets the DNS server address for a network interface 
+Get-DnsClient - Gets details about a network interface on a computer 
+
+#Syntax Example:
+Set-DnsClient -InterfaceAlias Ethernet -ConnectionSpecificSuffix "adatum.corn" 
+
+
+#Managing Windows Firewall  
+New-NetFirewallRule - Creates a new firewall rule 
+Set-NetFirqwallRule - Sets properties for firewall rules 
+Get-NetFirewallRule - Gets properties for firewall rules 
+Remove-NetFirewallRule - Deletes firewall rules 
+Rename-NetFirewallRule - Renames firewall rules 
+Copy-NetFirewallRule - Makes a copy of firewall rules 
+Enable-NetFirewallRule - Enables firewall rules 
+Disable-NetFirewallRule - Disables firewall rules 
+Get-NetFirewallProfile - Gets properties for firewall profiles 
+Set-NetFirewallProfile - Sets properties for firewall profiles 
+
+
+#Group Policy management cmdlets 
+New-GPO - Creates a new GPO 
+Get-GPO - Retrieves a GPO 
+Set-GPO - Modifies properties of a GPO 
+Remove-GPO - Deletes a GPO 
+Rename-GPO - Renames a GPO 
+Backup-GPO - Creates a backup Of a GPO 
+copy-GPO - Copies a GPO from one domain to another 
+Restore-GPO - Restores a GPO from backup files 
+New-GPLink - Links a GPO to an AD DS container 
+Import-GPO - Imports GPO settings from a backed-up GPO 
+Set-GPRegistryValue - Configures one or more registry-based policy settings in a GPO 
+
+
+#Server Manager cmdlets  
+Get- WindowsFeature - Obtains and displays information about Windows Server roles, services, and features on the local computer 
+Install-WindowsFeature - Installs roles, services, or features 
+Uninstall- WindowsFeature - Uninstalls roles, services, or features 
+
+#Syntax Example:
+Install-WindowsFeature "nlb" 
+
+
+#Hyper-V cmdlets 
+Get-VM - Gets properties of a VM 
+Set-VM - Sets properties of a VM 
+New-VM - Creates a new VM 
+Start-VM - Starts a VM 
+Stop-VM - Stops a VM 
+Restart-VM - Restarts a VM 
+Suspend-VM - Pauses a VM 
+Resume-VM - Resumes a paused VM 
+Import-VM - Imports a VM from a file 
+Export-VM - Exports a VM to a file 
+Checkpoint-VM - Creates a checkpoint of a VM 
+
+
+#IIS administration cmdlets 
+New-IISSite - Creates a new IIS website
+Get-IISSite - Gets properties and configuration information about an IIS website 
+Start- IISSite - Starts an existing IIS website on the IIS server 
+Stop-ISSSite - Stops an IIS website 
+New-WebApplication - Creates a new web application 
+Remove-WebApplication - Deletes a web application 
+New-WebAppPool - Creates a new web application pool 
+Restart-WebAppPool - Restarts a web application pool 
+
+
+#Managing permissions with PowerShell 
+Get-Acl - Gets objects that represent the security descriptor of a file or resource. The security descriptor includes the access control lists (ACLs) of the resource. The ACL lists permissions that users and groups have to access the resource. 
+Set-Acl - Changes the security descriptor Of a specified item, such as a file, folder, or a registry key, to match the values in a security descriptor that you supply 
+
+#To update access permissions: 
+#1)Use Get-Acl to retrieve the existing access control list rules for the Object. 
+#2)Create a new FileSystemAccessRule to be applied to the object. 
+#3)Add the new rule to the existing ACL permission set. 
+#4)Use Set-Acl to apply the new ACL to the existing file or folder. 
+
+
+
+#Create Hyper-V Machine
+
+$VMName = "MSSAVM"
+ 
+$VM = @{
+     Name = $VMName
+     MemoryStartupBytes = 2147483648
+     Generation = 2
+     NewVHDPath = "C:\vmstore\$VMName\$VMName.vhdx"
+     NewVHDSizeBytes = 53687091200
+     BootDevice = "VHD"
+     Path = "C:\vmstore\$VMName"
+}
+
+#Create a new VM
+New-VM -Name DC -MemoryStartupBytes 512MB -Path C:\VM
+
+# Display Virtual Switches for the VM
+Get-VM "MSSAVM" | Get-VMNetworkAdapter
+
+# Get all the Virtual Switches on the Host
+Get-VMSwitch | ft
+ 
+# Connect the Private Virtual Switch to the Machine 
+Get-VM "MSSAVM" | Get-VMNetworkAdapter | Connect-VMNetworkAdapter -SwitchName "PVS"
+ 
+# Boot the VM
+Start-VM -Name MSSAVM -Verbose
+ 
+# Show Status of Running and off VM's
+Get-VM | where {$_.State -eq 'Running'}
+ 
+Get-VM | where {$_.State -eq 'Off'}
+ 
+# Shuts down the VM
+Stop-VM -Name MSSAVM
+ 
+# Configures Startup and Dynamic Memory for the VM
+Set-VMMemory -VMName MSSAVM -DynamicMemoryEnabled $true -StartupBytes 2048MB -MinimumByte 2048MB
+ 
+# Deletes and Remove all File resources for the VM
+Remove-VM -Name MSSAVM -Force -Verbose
+Stop-VM -Name CL-1
+Remove-Item -Path C:\vmstore\MSSAVM\MSSAVM.vhdx -Confirm
+Remove-Item -Path C:\vmstore\MSSAVM -Force
+
+
+
+#Create the London Admins group and place them in the OU at the same 
+time. 
+New-ADGroup "London Admins" —Group cope Global —Path 
+
+#create a new VM named LON-GUEST1
+New-VM –Name LON-GUEST1 –MemoryStartupBytes 1024MB –VHDPath "E:\VirtualMachines\LON-GUEST1\LON-GUEST1.vhd" –SwitchName "Isolated Network"
+
+#Enable Host Resource Protection to regulate resource usage on the host 
+Set-VMProcessor LON-GUEST2 -EnableHostResourceProtection $true
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
