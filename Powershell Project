@@ -1,0 +1,150 @@
+In this lab, you will be challenged with your understanding of PowerShell to automate and process administration with your Windows computer.
+Contoso Finance has recently begun a project to regularly automate and control their servers. Their current task requires adding users to Windows servers in order to support access to a legacy application as employees are onboarded via their HR system. Contoso’s management system is based around scripting and procedural steps to ensure that their staff can follow standard repeatable steps on their systems. Therefore, they are electing to utilize default Windows PowerShell Modules and PowerShell scripting to administer their systems. They have reached out for assistance in developing and setting up cmdlets and scripts for them to utilize.
+
+Challenge 1: Creating users with cmdlets
+In this challenge, you will be creating users and groups within a PowerShell environment on a Windows Server.
+Challenge 2: Using a script file to create users
+In this challenge, you will encapsulate the cmdlets to create users via a reusable script file.
+Challenge 3: Exporting details to files
+In this challenge, you will export content of users and groups to files for records and references in the future.
+Challenge 4: Using files for input
+In this challenge, you will utilize files on the file system to input user details to the script file.
+Challenge 5: Automating scripts with a schedule
+In this challenge, you will take all the cmdlets you've used and set them up to run automatically on a regular schedule.
+
+
+
+1) 
+-Local group created on the system
+-Local users created on the system
+-Created users added to the created group
+--------------------------------------------
+New-LocalGroup -Name "LegacyAppAccess"
+
+$Password = Read-Host -AsSecureString
+$params = @{
+    Name        = 'Test_User1'
+    Password    = $Password
+    FullName    = 'Test User1'
+    Description = 'This is Test User number 1.'
+}
+New-LocalUser @params
+
+$Password = Read-Host -AsSecureString
+$params = @{
+    Name        = 'Test_User2'
+    Password    = $Password
+    FullName    = 'Test User2'
+    Description = 'This is Test User number 2.'
+}
+New-LocalUser @params
+
+Add-LocalGroupMember -Group "LegacyAppAccess" -Member "Test_User1", "Test_User2"
+
+
+
+2)
+-Create a Script file containing a parameter for the users name used to create users and add them to the LegacyAppAccess group
+--------------------------------------------
+$FirstName = "Amber"
+$LastName = "Ziegler"
+
+Set-Variable -Name "UserName" -Value ($FirstName.Substring(0, 1) + $LastName)
+Set-Variable -Name "Password" -Value (Read-Host -AsSecureString)
+Set-Variable -Name "FullName" -Value ($FirstName + " " + $LastName)
+Set-Variable -Name "Description" -Value "This user is $FullName"
+
+New-LocalUser -Name $UserName -Password $Password -FullName $FullName -Description $Description
+
+Add-LocalGroupMember -Group "LegacyAppAccess" -Member $UserName
+
+
+3)
+-Create a Script file that exports membership info of the LegacyAppAccess group to a CSV file and a JSON file
+--------------------------------------------
+#Create variable MembershipInfo that stores the group members of the group legacyappaccess
+$MembershipInfo = Get-LocalGroupMember -Group "LegacyAppAccess"
+
+#Create an output in CSV format that includes the value of the membershipinfo
+Set-Content -Path C:\LegacyAppAudit.csv -Value $MembershipInfo
+
+#Gets the content of the legacyappaudit.csv and converts it to a json file then creates an output in json format
+Get-Content -Path C:\LegacyAppAudit.csv | ConvertTo-Json | Set-Content -Path C:\LegacyAppAudit.json
+
+4)
+-Create a Cmdlet that runs user creation script with New Users.txt passed to the script as input
+--------------------------------------------
+# Read the content of the New Users.txt file
+$NewUsers = Get-Content -Path "C:\New Users.txt"
+
+# Iterate through each line in the file
+foreach ($line in $NewUsers) {
+    $firstName, $lastName = $line -split '\s+'
+
+    Set-Variable -Name "UserName" -Value ($firstName.Substring(0, 1) + $lastName)
+    Set-Variable -Name "Password" -Value (Read-Host -Prompt "Enter password for $UserName" -AsSecureString)
+    Set-Variable -Name "FullName" -Value ($firstName + " " + $lastName)
+    Set-Variable -Name "Description" -Value "This user is $FullName"
+
+    # Create the new local user
+    New-LocalUser -Name $UserName -Password $Password -FullName $FullName -Description $Description
+
+    # Add the user to the "LegacyAppAccess" group
+    Add-LocalGroupMember -Group "LegacyAppAccess" -Member $UserName
+}
+
+
+
+5)
+-Create a Script file that automatically adds new users to the LegacyAppAccess group, and exports LegacyAppAccess group membership information to a CVS and JSON file 
+once per day without human intervention. 
+--------------------------------------------
+# Define the path to the New Users file
+$NewUsersFilePath = "C:\New Users.txt"
+
+# Define the path for CSV and JSON exports
+$CsvExportPath = "C:\LegacyAppAudit.csv"
+$JsonExportPath = "C:\LegacyAppAudit.json"
+
+# Script for the scheduled task
+$NewUserScript = {
+    # Import the New Users file
+    $NewUsers = Get-Content -Path $using:NewUsersFilePath
+
+    # Iterate through each line in the file
+    foreach ($line in $NewUsers) {
+        $firstName, $lastName = $line -split '\s+'
+
+        $UserName = $firstName.Substring(0, 1) + $lastName
+
+        # Check if the user already exists
+        if (-not (Get-LocalUser -Name $UserName -ErrorAction SilentlyContinue)) {
+            $Password = demo!pass123
+            $FullName = $firstName + " " + $lastName
+            $Description = "This user is $FullName"
+
+            # Create the new local user
+            New-LocalUser -Name $UserName -Password $Password -FullName $FullName -Description $Description
+
+            # Add the user to the "LegacyAppAccess" group
+            Add-LocalGroupMember -Group "LegacyAppAccess" -Member $UserName
+        }
+    }
+
+    # Export LegacyAppAccess group membership information to CSV and JSON
+    Get-LocalGroupMember -Group "LegacyAppAccess" | Select-Object Name | Export-Csv -Path $using:CsvExportPath -NoTypeInformation
+    Get-LocalGroupMember -Group "LegacyAppAccess" | Select-Object Name | ConvertTo-Json | Set-Content -Path $using:JsonExportPath
+}
+
+# Define the trigger for the scheduled task (daily at 2:30 PM)
+$Trigger = New-ScheduledTaskTrigger -Daily -At "2:30 PM"
+
+# Define the action for the scheduled task
+$Action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument $NewUserScript
+
+# Create the scheduled task
+$TaskAction = Register-ScheduledTask -Action $Action -Trigger $Trigger -TaskName "LegacyAppAuditTask" -User "NT AUTHORITY\SYSTEM"
+
+# Display a message indicating that the scheduled task has been created
+Write-Host "Scheduled task 'LegacyAppAuditTask' created successfully. It will run daily at 2:30 PM."
+
