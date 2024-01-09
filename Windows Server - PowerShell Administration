@@ -1,0 +1,211 @@
+Windows Server - PowerShell Administration
+
+Scenario
+Contoso Finance has recently begun a project to better understand what services and applications are running on their systems. Their management system is based around scripting and standard procedures that are repeatable by the staff. Therefore, they are electing to utilize default Windows PowerShell Modules and PowerShell scripting to administer their systems. They have reached out for assistance in developing and setting up cmdlets and scripts for them to utilize.
+Accessing Microsoft Azure
+The exercises contained in this challenge can be run on any non-production Windows Server that has PowerShell installed. If you do not have a system you can use, a virtual machine is provided in an Azure Subscription for you. You can access the virtual machine by launching another browser tab on your desktop and navigating to the below URL. Your Azure Credentials are available by clicking the Lab Environment tab at the top of the Lab Player.
+https://portal.azure.com
+
+
+Challenge 1: Start with Cmdlets
+	To start, Contoso would like a clear understanding of the landscape of services provided on their servers. Therefore, they have requested a list of all services installed on their servers and what they could utilize when managing them via PowerShell.
+	When working with PowerShell, it is always key to understand what cmdlets are available to you. For the upcoming challenges, you will be working primarily with the cmdlets contained in the PowerShell Management module. Its imperative that you know how to find the cmdlets available as part of this module.
+	Finally, one of the most common issues that Contoso deals with is a legacy printer driver that periodically hangs the print spooler on the service. They would like an example of a minimal cmdlet to restart the print spooler with PowerShell cmdlet(s).
+	In this challenge, you will list the cmdlets within a module, list the services on a Windows server, and determine the cmdlet to use in order to restart a service on a server.
+	Success criteria
+	Demonstrate to your coach the following:
+	• List the cmdlets within the PowerShell Management module
+	• List the services on a Windows server
+	• Determine the cmdlet to restart the print spooler service on a local computer
+
+Answer:
+	1) Get-Command
+	2) Get-Service
+	3) Restart-Service -Name Spooler
+	
+	
+	
+Challenge 2: Getting Details About Running Services
+	In this challenge, you will list the running services of a server, and list the services with a specified set of properties, using PowerShell.
+	With a list of services and relevant cmdlets, Contoso would like to get a regular list of their services running on their servers that are taking up resources. They would like this information directly from PowerShell rather than having to do any changes or filterings outside of PowerShell. In addition, they would also like a report of all services running on their server including their name, file location, status, and startup type.
+	Use the Get-Service cmdlet to list services that are running on the server, filtering out any Stopped services in the result.
+	Using PowerShell, create a report listing all services running on the server with the below information listed for each service.
+	• Name
+	• Status
+	• Startup Type
+	• File Location
+	Hint: In PowerShell, File Location is referred to as the BinaryPathName.
+	Hint: Use the Get-Member cmdlet to find property names.
+	Success criteria
+	Demonstrate to your coach:
+	• List only the running services on a server.
+	• Services with only the specific properties listed below
+	• Name
+	• Status
+	• Startup Type
+	• File Location
+
+Answer:
+	# Get running services and filter out stopped services
+	$runningServices = Get-Service | Where-Object { $_.Status -eq 'Running' }
+	
+	# Create a report for each running service
+	$serviceReport = foreach ($service in $runningServices) {
+	
+	#Gather report details     
+	$serviceDetails = Get-WmiObject Win32_Service -Filter "Name = '$($service.Name)'"
+	    "
+	     Name           $($service.Name)
+	     Status          $($service.Status)
+	     Start Type   $($service.StartType)
+	     Path             $($serviceDetails.PathName)"
+	}
+	
+	# Display the report
+	$serviceReport | Format-Table -AutoSize
+	
+
+
+	Challenge 3: Working with Files
+		In this challenge, you will create a folder to store files, export a list of running services to an HTML file, and export a report of services to a JSON file using PowerShell.
+		Contoso is pleased with the information, but they’d like to be able to have this information on hand for future reference.
+		Contoso would like the information to be accessible via two files located in one folder.
+		They would like the list of running services to be in a .HTML file for use in a web status page they will develop in the future.
+		They would like the report created in the previous exercise to be placed in a .JSON file for future reference as well.
+		Create a folder with PowerShell to store the information gathered in the previous exercise. Then using PowerShell, export the list of running services to a .HTML file and the report to a .JSON file. Place these files in the folder via PowerShell as well.
+		Success criteria
+		Demonstrate to your coach:
+		• Files stored in a folder created via PowerShell
+		• Exported running services list to an HTML file and stored in the folder via PowerShell
+		• Exported report to a JSON file and stored in the folder via PowerShell
+
+Answer:	
+	#Create New folder
+	New-Item -Path "c:\" -Name "Services Report" -ItemType "directory"
+	
+	#Export report to HTML format
+		$serviceReport | ConvertTo-Html | Out-File -FilePath "C:\Services Report\ServicesReport.html"
+		#Export report to JSON format
+		$serviceReport | ConvertTo-JSON | Out-File -FilePath "C:\Services Report\ServicesReport.json"
+	
+	#Display Files in Folder
+	Get-ChildItem -Path 'C:\Services Report'
+
+
+
+Challenge 4: Searching for Files
+	In this challenge, you will create PowerShell a script that searches for files you created that include a success or failure manage and a script that searches for old files and restarts a service if any are found using PowerShell.
+	After exporting the service information to files, Contoso would also like to locate the files on their server’s file system using PowerShell. To do this, they want you to create a PowerShell script that searches for the files and presents a success message if the files are found, and presents an error message if they are not found.
+	Furthermore, Contoso would like to revisit the printer spooler service issue from Exercise 1. They would like to locate any files in the printer spooler folder that are too old. Normally successful print jobs complete in an hour, so if there are files in the queue over 6 hours old, they would like the spooler service restarted. To do this, they want you to create a PowerShell script that checks for any files older than 6 hours in the printer spooler folder and restarts the service if it finds any.
+	Hint: The printer spooler file path should be systemroot\System32\Spool\Printers.
+	Hint: Make sure you run PowerShell ISE as an administrator.
+	Success criteria
+	Demonstrate to your coach:
+	• PowerShell script that searches for the files created in the previous exercise that includes a success and error message. Verify the presence of the error message by deleting the files and running the script again.
+	• PowerShell script that searches for any files older than 6 hours in the printer spooler folder and restarts the service if it finds any
+	
+Answer:
+	$HTMLPath = 'C:\Services Report\servicesReport.html'
+	if ( Test-Path -Path $HTMLPath )
+	{
+	  Write-Host "The file is present"
+	 }
+	 else
+	 { 
+	 Write-Host "The file is not present"
+	 
+	 }
+	
+	
+	$SpoolerItems = Get-ChildItem -Path 'C:\Windows\System32\spool\PRINTERS'
+	
+	foreach ($item in $SpoolerItems) {
+	
+	$creationTime = $item.CreationTime
+	$AgeinHours = (Get-Date) - $creationTime
+	
+	Write-Host "The '$($item.Name)' was created on $creationTime. The file is $($AgeinHours.TotalHours) hours old"
+	
+	if ( $AgeinHours.TotalHours -gt 6 ) {
+	Restart-Service -Name Spooler 
+	Write-Host "The spooler has been restarted"
+	}
+	else {
+	Write-Host "The spooler has not been restarted"
+	}
+	}	
+	
+	
+		
+Challenge 5: Working with Variables
+	In this challenge, you will incorporate the various PowerShell tasks you’ve completed into script files that make use of variables.
+	Contoso would finally like to incorporate these various PowerShell tasks that have been performed into script files. Contoso would like you to include variables in your scripts to increase the flexibility of the files. You will create PowerShell script files based on the tasks from the previous exercises listed below.
+	• Exports the server’s running services to a .html file and export each service’s name, status, startup type, and file location to a .json file.
+	• Check for any files older than 6 hours in the printer spooler folder and restart the service if any are found.
+	Success criteria
+	Demonstrate to your coach:
+	• A script file that exports the server’s running services to a .html file and that exports each service’s name, status, startup type, and file location to a .json file. A variable should be included that references the folder location where the files will be placed.
+	• A script file that searches for any files older than 6 hours in the printer spooler folder and restarts the service if it finds any. A variable should be included that references the file age to search for.
+
+Answer:
+Part A:
+	# Get running services and filter out stopped services
+	$runningServices = Get-Service | Where-Object { $_.Status -eq 'Running' }
+	 
+	# Create a report for each running service
+	$serviceReport = foreach ($service in $runningServices) {
+	 
+	    # Gather report details for each service
+	    $serviceDetails = Get-WmiObject Win32_Service -Filter "Name = '$($service.Name)'"
+	 
+	    # Create an object with selected properties for each service
+	    [PSCustomObject]@{
+	        Name       = $serviceDetails.DisplayName
+	        Status     = $service.Status
+	        StartMode  = $serviceDetails.StartMode
+	        PathName   = $serviceDetails.PathName
+	    }
+	}
+	 
+	# Report Path Location
+	$serviceReportPath = 'C:\Services Report\ServiceReport.txt'
+	 
+	# Convert and Export report to HTML format
+	$serviceReportHTML = $serviceReport | ConvertTo-Html -Property Name, Status, StartMode, PathName
+	 
+	# Create Report.txt
+	$serviceReport | Out-File -FilePath $serviceReportPath
+	 
+	# Export HTML content to file
+	$serviceReportHTML | Out-File -FilePath "$serviceReportPath.html" -Encoding UTF8
+	 
+	#Export to JSON 
+	$serviceReport | ConvertTo-Json | Out-File -FilePath "$serviceReportPath.json"
+	 
+Part B:
+	$userinput = Read-Host "Enter the number of MAX hours"
+	
+	$SpoolerItems = Get-ChildItem -Path 'C:\Windows\System32\spool\PRINTERS'
+		
+	foreach ($item in $SpoolerItems) {
+	 
+	#Time File was created
+	$creationTime = $item.CreationTime
+	 
+	#Hours file has been created
+	$AgeinHours = (Get-Date) - $creationTime
+	 
+	#Condition to trigger Printer Spooler restart
+	$maxhours = $AgeinHours.TotalHours -gt $userinput	
+	 
+		Write-Host "The '$($item.Name)' was created on $creationTime. The file is $($AgeinHours.TotalHours) hours old"
+		
+	if ($maxhours) {
+	 
+		Restart-Service -Name Spooler 
+		Write-Host "The spooler has been restarted"
+		}
+		else {
+		Write-Host "The spooler has not been restarted"
+		}
+	}
